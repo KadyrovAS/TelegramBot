@@ -15,7 +15,6 @@ import pro.sky.telegrambot.model.NotificationTask;
 import pro.sky.telegrambot.service.NotificationTaskService;
 
 import javax.annotation.PostConstruct;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -27,7 +26,7 @@ import java.util.List;
 public class TelegramBotUpdatesListener implements UpdatesListener {
 
     private final NotificationTaskService notificationTaskService;
-    private Logger logger = LoggerFactory.getLogger(TelegramBotUpdatesListener.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(TelegramBotUpdatesListener.class);
 
     public TelegramBotUpdatesListener(NotificationTaskService notificationTaskService) {
         this.notificationTaskService = notificationTaskService;
@@ -50,7 +49,7 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
                 notificationTask.setChat_id(update.message().chat().id());
                 notificationTask.setDate_time(parseDateTime(update.message().chat().id(), update.message().text()));
                 notificationTask.setTask_text(parseText(update.message().chat().id(), update.message().text()));
-                logger.info("Processing update: {}", update);
+                LOGGER.info("Processing update: {}", update);
                 notificationTaskService.add(notificationTask);
                 telegramBot.execute(new SendMessage(update.message().chat().id(),
                         "Your message has been received"));
@@ -62,11 +61,11 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
     @Scheduled(cron = "0 * * * * *")
     public void run() {
         LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
-        logger.info("Running schedule: {}", now);
+        LOGGER.info("Running schedule: {}", now);
         Collection<NotificationTask> notificationTaskList = notificationTaskService.findAllByDateTime(now);
         notificationTaskList.forEach(notificationTask -> {
             SendResponse response = telegramBot.execute(new SendMessage(notificationTask.getChat_id(), notificationTask.getTask_text()));
-            logger.info("Send response: {}", response);
+            LOGGER.info("Send response: {}", response);
         });
     }
 
@@ -75,7 +74,7 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
         String[] dt = text.split(" ");
         if (dt.length < 3) {
             telegramBot.execute(new SendMessage(id, "Illegal argument"));
-            logger.error("Illegal argument exception");
+            LOGGER.error("Illegal argument exception");
             throw new IllegalArgumentException("Illegal argument exception");
         }
 
@@ -86,11 +85,11 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
              dateTime = LocalDateTime.parse(text, formatter);
         } catch (DateTimeParseException e) {
             telegramBot.execute(new SendMessage(id, "Illegal DateTime format"));
-            logger.error("Illegal DateTime format exception: {}", e.getMessage());
+            LOGGER.error("Illegal DateTime format exception: {}", e.getMessage());
             throw new IllegalArgumentException(e.getMessage());
         }
         if (dateTime.isBefore(LocalDateTime.now())){
-            logger.error("The appointed time is already in the past {}", dateTime);
+            LOGGER.error("The appointed time is already in the past {}", dateTime);
             telegramBot.execute(new SendMessage(id, "The appointed time is already in the past"));
             throw new IllegalArgumentException("The appointed time is already in the past");
         }
@@ -102,7 +101,7 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
         if (dt.length < 3) {
             SendMessage message = new SendMessage(id, "Illegal argument");
             telegramBot.execute(message);
-            logger.error("Illegal argument exception");
+            LOGGER.error("Illegal argument exception");
             throw new IllegalArgumentException("Illegal argument");
         }
         StringBuilder result = new StringBuilder();

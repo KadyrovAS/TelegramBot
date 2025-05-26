@@ -25,6 +25,10 @@ public class NotificationTaskService {
 
     public Collection<NotificationTask> findAllByDateTime(LocalDateTime dateTime) {
         LOGGER.info("Finding all notification tasks by date {}", dateTime);
-        return notificationTaskRepository.findAllByDateTime(dateTime);
+        return notificationTaskRepository.findByDateTime(dateTime);
+    }
+    public void deleteAll(){
+        LOGGER.info("Deleting all notification tasks!");
+        notificationTaskRepository.deleteAll();
     }
 }

@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 
 public interface NotificationTaskRepository extends JpaRepository<NotificationTask, Long> {
-    @Query(value = "select * from notification_task where date_time = :dateTime", nativeQuery = true)
-    Collection<NotificationTask> findAllByDateTime(@Param("dateTime") LocalDateTime dateTime);
+    Collection<NotificationTask> findByDateTime(LocalDateTime dateTime);
 
 }
